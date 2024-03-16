@@ -3,6 +3,7 @@ const client = new pg.Client(process.env.DATABASE_URL || 'postgres://localhost/a
 const uuid = require('uuid')
 const bcrypt = require('bcrypt')
 
+
 const createTables = async()=>{
     const SQL = `
     DROP TABLE IF EXISTS user_skills;
@@ -21,7 +22,7 @@ const createTables = async()=>{
         id UUID PRIMARY KEY,
         user_id UUID REFERENCES users(id) NOT NULL,
         skill_id UUID REFERENCES skills(id) NOT NULL,
-        CONSTRAINT unique_skill_user UNIQUE(user_id, skill_id)
+        CONSTRAINT unique_user_id_skill_id UNIQUE(user_id, skill_id)
     );
     `
     await client.query(SQL)
@@ -64,15 +65,15 @@ const createUserSkills = async({user_id, skill_id})=>{
     const response = await client.query(SQL, [uuid.v4(), user_id, skill_id])
     return response.rows[0]
 }
-const fetchUserSkills = async(id)=>{
+const fetchUserSkills = async(user_id)=>{
     const SQL = `
     SELECT * FROM user_skills
     WHERE user_id=$1
     `
-    const response = await client.query(SQL, [id])
+    const response = await client.query(SQL, [user_id])
     return response.rows
 }
-const deleteUserSkill = async({user_id, id})=>{
+const deleteUserSkills = async({user_id, id})=>{
     const SQL = `
     DELETE FROM user_skills
     WHERE user_id=$1 AND id=$2
@@ -88,5 +89,5 @@ module.exports = {
     fetchSkills,
     createUserSkills,
     fetchUserSkills,
-    deleteUserSkill
+    deleteUserSkills
 }
